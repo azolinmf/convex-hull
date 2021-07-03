@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "name": "Launch (lldb)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/a.out",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "/Users/fernanda/Documents/UTFPR/PAA/convex-hull",
+      "environment": [],
+      "program": "/Users/fernanda/Documents/UTFPR/PAA/convex-hull/build/Debug/outDebug",
+      "internalConsoleOptions": "openOnSessionStart",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/Users/fernanda/.vscode/extensions/ms-vscode.cpptools-1.0.1/debugAdapters/lldb-mi",
+      "externalConsole": false
+    }
+  ]
+}
