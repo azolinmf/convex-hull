@@ -54,9 +54,14 @@ float getDistanceBetweenPoints(Point p1, Point p2)
     return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
 }
 
-float calculateVectorCrossProduct() 
+int getPointPosition(Point p1, Point p2, Point p3) 
 {
+    int a = p2.x - p1.x;
+    int b = p3.y - p1.y;
+    int c = p2.y - p1.y;
+    int d = p3.x - p1.x;
 
+    return a*b - c*d;
 }
 
 int main()
@@ -69,6 +74,18 @@ int main()
     {
         cout << coordinates[i].x << " " << coordinates[i].y << endl;
     }
+
+    Point a;
+    a.x = 0;
+    a.y = 0;
+    Point b;
+    b.x = 2;
+    b.y = 2;
+    Point c;
+    c.x = 2;
+    c.y = 2;
+
+    cout << getPointPosition(a, b, c);
     
 
     return 0;
