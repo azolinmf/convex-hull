@@ -12,17 +12,26 @@ public:
     int y;
 };
 
+/*
+* A função lê as linhas de um arquivo txt, onde a primeira linha é a quantidade de pontos
+* e em sequência, as coordenadas x e y dos pontos, e salva numa struct que guarda as duas
+* coordenadas
+*
+* saída: Retorna um vetor de pontos, com as coordenadas x e y
+*/
 vector<Point> readCoordinates()
 {
     ifstream inFile;
-    inFile.open("my_file.txt");
+    inFile.open("input.txt");
 
+    // verifica se conseguiu abrir o arquivo
     if (inFile.fail())
     {
         cerr << "Error opening a file" << endl;
         inFile.close();
         exit(1);
     }
+
     string line;
     int x, y;
     int num_coordinates;
@@ -35,11 +44,11 @@ vector<Point> readCoordinates()
     {
         inFile >> x >> y;
 
-        Point ponto;
-        ponto.x = x;
-        ponto.y = y;
+        Point point;
+        point.x = x;
+        point.y = y;
 
-        coordinates.push_back(ponto);
+        coordinates.push_back(point);
 
         count++;
     }
@@ -49,19 +58,37 @@ vector<Point> readCoordinates()
     return coordinates;
 }
 
+/*
+* Calcula a distância entre dois pontos pelo Teorema e Pitagoras
+*
+* entrada: dois Pontos com suas coordenadas
+*
+* saída: Retorna um vetor de pontos, com as coordenadas x e y
+*/
+// TODO: vamos usar?
 float getDistanceBetweenPoints(Point p1, Point p2)
 {
     return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
 }
 
-int getPointPosition(Point p1, Point p2, Point p3) 
+/*
+* Retorna a posição de um ponto em relação a outros dois
+*
+* entrada: três Pontos com suas coordenadas
+*
+* saída: Retorna um número
+*        se > 0, p3 está À esquerda de p2p1
+*        se < 0, p3 está À direita de p2p1
+*        se = 0, p3 é coincidente a p2p1
+*/
+int getPointPosition(Point p1, Point p2, Point p3)
 {
-    int a = p2.x - p1.x;
-    int b = p3.y - p1.y;
-    int c = p2.y - p1.y;
-    int d = p3.x - p1.x;
+    int twoOneX = p2.x - p1.x;
+    int threeOneY = p3.y - p1.y;
+    int twoOneY = p2.y - p1.y;
+    int threeOneX = p3.x - p1.x;
 
-    return a*b - c*d;
+    return (twoOneX * threeOneY) - (twoOneY * threeOneX);
 }
 
 int main()
