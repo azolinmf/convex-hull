@@ -1,13 +1,20 @@
 # Convex-hull
 
 ## Debug (vscode)
+O vscode vai compilar o programa e colocar os arquivos de resultado na pasta `debug`. A execução utilizará o arquivo: `debug/input.txt`
 1. Abrir o arquivo `main.cpp`.
 2. Abrir a aba de debug.
-3. Executar: `g++-11 - Build and debug active file`.
+3. Executar: `g++ Debug active file`.
 
-## Execução rápida (vscode)
-
+## Simular 
+O script gera um arquivo de entrada com base na entrada informada e executa o programa seguindo os requisitos do trabalho.
 ```shell
-gcc main.cpp -o debug/main -lstdc++ && ./debug/main
+./simulate.sh
 ```
 
+## Execução manual
+```shell
+make
+./hull input.txt
+make clean
+```

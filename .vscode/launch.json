@@ -5,17 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "g++-11 - Build and debug active file",
+            "name": "g++ Debug active file",
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/debug/${fileBasenameNoExtension}",
-            "args": [],
+            "args": [
+                "${fileDirname}/debug/input.txt"
+            ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            "preLaunchTask": "C/C++: g++-11 build active file"
+            "preLaunchTask": "C/C++: g++ Build active file"
         }
     ]
 }

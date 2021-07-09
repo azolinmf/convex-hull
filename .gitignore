@@ -1,2 +1,4 @@
 debug/*.dSYM
 debug/main
+_dev
+simulate
