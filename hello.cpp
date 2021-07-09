@@ -81,14 +81,99 @@ float getDistanceBetweenPoints(Point p1, Point p2)
 *        se < 0, p3 está À direita de p2p1
 *        se = 0, p3 é coincidente a p2p1
 */
-int getPointPosition(Point p1, Point p2, Point p3)
+double getPointPosition(Point p1, Point p2, Point p3)
 {
-    int twoOneX = p2.x - p1.x;
-    int threeOneY = p3.y - p1.y;
-    int twoOneY = p2.y - p1.y;
-    int threeOneX = p3.x - p1.x;
+    int firstPointX = p2.x - p1.x;
+    int firstPointY = p3.y - p1.y;
+    int secondPointY = p2.y - p1.y;
+    int secondPointX = p3.x - p1.x;
 
-    return (twoOneX * threeOneY) - (twoOneY * threeOneX);
+    return (firstPointX * firstPointY) - (secondPointY * secondPointX);
+}
+
+/**
+ * @param p1: primeiro ponto da reta
+ * @param p2: segundo ponto da reta
+ * @param p3: ponto fora da reta
+ * @return distancia entre o ponto e a reta
+ * */
+double calculateDistanceBetweenPointAndRect(Point p1, Point p2, Point p3) {
+    double position = getPointPosition(p1, p2, p3);
+    double squareRoot = sqrt(pow(position, 2));
+    double u = pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2);
+
+    return squareRoot/u;
+}
+
+/**
+ * @param points: vetor com todos os pontos
+ * @return vetor com os dois pontos extremos
+ * */
+vector<Point> getEdgePoints(vector<Point> points) {
+    Point minimumXpoint = points[0];
+    Point maximumXpoint = points[0];
+
+    for (int i = 0; i <= points.size() - 1; i++) {
+        if (minimumXpoint.x > points[i].x || (minimumXpoint.x == points[i].x && minimumXpoint.y < points[i].y) ) {
+            minimumXpoint = points[i];
+           
+        }    
+        if (maximumXpoint.x < points[i].x || (maximumXpoint.x == points[i].x && maximumXpoint.y > points[i].y) ) {
+            maximumXpoint = points[i];
+        }
+    }
+
+    vector<Point> edges;
+    edges.push_back(minimumXpoint);
+    edges.push_back(maximumXpoint);
+
+    return edges;
+}
+
+Point edgePoint(vector<Point> points, Point p, Point q) {
+    Point foundPoint;
+    double distanceFound = -1;
+
+    for(int i = 0; i < points.size(); i++) {
+        double distance = calculateDistanceBetweenPointAndRect(p, q, points[i]);
+        if (distanceFound < distance) {
+            distanceFound = distance;
+            foundPoint = points[i];
+        }
+    }
+
+    return foundPoint;
+}
+
+vector<Point> convexHull(vector<Point> points, Point p, Point q) {
+
+    if (points.size() <= 2) {
+        vector<Point> v;
+        v.push_back(p);
+        v.push_back(q);
+        return v;
+    }
+
+    vector<Point> toTheRight;
+    vector<Point> toTheLeft;
+
+    for(int i = 0; i < points.size(); i++) {
+        double position = getPointPosition(p, q, points[i]);
+        if (position > 0) {
+            //ponto esta a esquerda da reta pq
+            toTheLeft.push_back(points[i]);
+        } else if (position < 0) {
+            //ponto esta a direita da reta pq
+            toTheRight.push_back(points[i]);
+        }
+    }
+
+    Point leftPoint = edgePoint(toTheLeft, p, q);
+    convexHull(toTheLeft, p, leftPoint);
+
+    Point rightPoint = edgePoint(toTheRight, p, q);
+    convexHull(toTheRight, p, rightPoint);
+
 }
 
 int main()
@@ -99,21 +184,30 @@ int main()
 
     for (int i = 0; i <= coordinates.size() - 1; i++)
     {
-        cout << coordinates[i].x << " " << coordinates[i].y << endl;
+        //cout << coordinates[i].x << " " << coordinates[i].y << endl;
     }
 
     Point a;
     a.x = 0;
     a.y = 0;
     Point b;
-    b.x = 2;
-    b.y = 2;
+    b.x = 0;
+    b.y = 10;
     Point c;
-    c.x = 2;
-    c.y = 2;
+    c.x = 10;
+    c.y = 10;
+    Point d;
+    d.x = 10;
+    d.y = 0;
 
-    cout << getPointPosition(a, b, c);
-    
+    vector<Point> v;
+    v.push_back(a);
+    v.push_back(b);
+    v.push_back(c);
+    v.push_back(d);
+
+
+
 
     return 0;
 }
