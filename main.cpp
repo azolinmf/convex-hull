@@ -5,8 +5,7 @@
 
 using namespace std;
 
-class Point
-{
+class Point {
 public:
     int x;
     int y;
@@ -19,14 +18,12 @@ public:
 *
 * saída: Retorna um vetor de pontos, com as coordenadas x e y
 */
-vector<Point> readCoordinates()
-{
+vector<Point> readCoordinates(char* fileName) {
     ifstream inFile;
-    inFile.open("input.txt");
+    inFile.open(fileName);
 
     // verifica se conseguiu abrir o arquivo
-    if (inFile.fail())
-    {
+    if (inFile.fail()) {
         cerr << "Error opening a file" << endl;
         inFile.close();
         exit(1);
@@ -40,8 +37,7 @@ vector<Point> readCoordinates()
     vector<Point> coordinates;
 
     int count = 0;
-    while (getline(inFile, line))
-    {
+    while (getline(inFile, line)) {
         inFile >> x >> y;
 
         Point point;
@@ -66,8 +62,7 @@ vector<Point> readCoordinates()
 * saída: Retorna um vetor de pontos, com as coordenadas x e y
 */
 // TODO: vamos usar?
-float getDistanceBetweenPoints(Point p1, Point p2)
-{
+float getDistanceBetweenPoints(Point p1, Point p2) {
     return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
 }
 
@@ -81,8 +76,7 @@ float getDistanceBetweenPoints(Point p1, Point p2)
 *        se < 0, p3 está À direita de p2p1
 *        se = 0, p3 é coincidente a p2p1
 */
-double getPointPosition(Point p1, Point p2, Point p3)
-{
+double getPointPosition(Point p1, Point p2, Point p3) {
     int firstPointX = p2.x - p1.x;
     int firstPointY = p3.y - p1.y;
     int secondPointY = p2.y - p1.y;
@@ -145,46 +139,56 @@ Point edgePoint(vector<Point> points, Point p, Point q) {
     return foundPoint;
 }
 
-// vector<Point> convexHull(vector<Point> points, Point p, Point q) {
+vector<Point> convexHull(vector<Point> points, Point p, Point q) {
 
-//     if (points.size() <= 2) {
-//         vector<Point> v;
-//         v.push_back(p);
-//         v.push_back(q);
-//         return v;
-//     }
+    if (points.size() <= 2) {
+        vector<Point> v;
+        v.push_back(p);
+        v.push_back(q);
+        return v;
+    }
 
-//     vector<Point> toTheRight;
-//     vector<Point> toTheLeft;
+    vector<Point> toTheRight;
+    vector<Point> toTheLeft;
 
-//     for(int i = 0; i < points.size(); i++) {
-//         double position = getPointPosition(p, q, points[i]);
-//         if (position > 0) {
-//             //ponto esta a esquerda da reta pq
-//             toTheLeft.push_back(points[i]);
-//         } else if (position < 0) {
-//             //ponto esta a direita da reta pq
-//             toTheRight.push_back(points[i]);
-//         }
-//     }
+    for(int i = 0; i < points.size(); i++) {
+        double position = getPointPosition(p, q, points[i]);
+        if (position > 0) {
+            //ponto esta a esquerda da reta pq
+            toTheLeft.push_back(points[i]);
+        } else if (position < 0) {
+            //ponto esta a direita da reta pq
+            toTheRight.push_back(points[i]);
+        }
+    }
 
-//     Point leftPoint = edgePoint(toTheLeft, p, q);
-//     convexHull(toTheLeft, p, leftPoint);
+    Point leftPoint = edgePoint(toTheLeft, p, q);
+    convexHull(toTheLeft, p, leftPoint);
 
-//     Point rightPoint = edgePoint(toTheRight, p, q);
-//     convexHull(toTheRight, p, rightPoint);
+    Point rightPoint = edgePoint(toTheRight, p, q);
+    convexHull(toTheRight, p, rightPoint);
+}
 
-// }
+/**
+ * Verifica se existe um arquivo com o nome passado como parâmetro para a função
+ */
+bool fileExists(const char *fileName) {
+    std::ifstream infile(fileName);
+    return infile.good();
+}
+  
+int main(int argc, char** argv) {
+    if(argc != 2 || !fileExists(argv[1])) {
+        cout << "Uso: ./hull input_file.txt\n" << endl;
+		return 1;
+	}
 
-int main()
-{
     vector<Point> coordinates;
 
-    coordinates = readCoordinates();
+    coordinates = readCoordinates(argv[1]);
 
-    for (int i = 0; i <= coordinates.size() - 1; i++)
-    {
-        //cout << coordinates[i].x << " " << coordinates[i].y << endl;
+    for (int i = 0; i <= coordinates.size() - 1; i++) {
+        // cout << coordinates[i].x << " " << coordinates[i].y << endl;
     }
 
     Point a;
@@ -205,9 +209,6 @@ int main()
     v.push_back(b);
     v.push_back(c);
     v.push_back(d);
-
-
-
 
     return 0;
 }
