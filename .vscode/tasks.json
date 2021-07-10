@@ -5,6 +5,7 @@
             "label": "C/C++: g++ Build active file",
             "command": "/usr/bin/g++",
             "args": [
+                "-std=c++20",
                 "-g",
                 "${file}",
                 "-o",

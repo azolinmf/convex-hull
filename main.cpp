@@ -1,214 +1,341 @@
+/**
+ * Projeto e Análise de Algoritmos
+ * 
+ * Implementação do algoritmo QuickHull para a cálculo fecho convexo a
+ * partir de um conjunto de pontos.
+ * 
+ * Alunos:
+ * XXXXXXX - Maria Fernanda Azolin
+ * XXXXXXX - Flávia 
+ * 1942808 - Otávio Baziewicz Filho
+ * 
+ */
+
+// Manipulação de arquivos
 #include <iostream>
 #include <fstream>
+
+// Estrutura de dadoss e funções matemáticas
 #include <vector>
 #include <math.h>
 
+// Cálculo do tempo de execução
+#include <chrono>
+
+using namespace std::chrono;
 using namespace std;
 
-class Point {
+class Ponto
+{
 public:
-    int x;
-    int y;
+    float x;
+    float y;
+
+    Ponto()
+    {
+        this->x = 0;
+        this->y = 0;
+    }
+
+    Ponto(float x, float y)
+    {
+        this->x = x;
+        this->y = y;
+    }
 };
 
-/*
-* A função lê as linhas de um arquivo txt, onde a primeira linha é a quantidade de pontos
-* e em sequência, as coordenadas x e y dos pontos, e salva numa struct que guarda as duas
-* coordenadas
-*
-* saída: Retorna um vetor de pontos, com as coordenadas x e y
-*/
-vector<Point> readCoordinates(char* fileName) {
-    ifstream inFile;
-    inFile.open(fileName);
+class Reta
+{
+public:
+    Ponto *p1;
+    Ponto *p2;
 
-    // verifica se conseguiu abrir o arquivo
-    if (inFile.fail()) {
-        cerr << "Error opening a file" << endl;
-        inFile.close();
+    Reta(Ponto p1, Ponto p2)
+    {
+        this->p1 = &p1;
+        this->p2 = &p2;
+    }
+};
+
+/**
+ * Função que verifica se o ponto está à esquerda da reta.
+ * 
+ * Para verificar se p3(x3,y3) está à esquerda da reta p1(x1,y1)p2(x2,y2),
+ * calcula-se: 
+ * f(p1,p2,p3) = (x2 − x1)(y3 − y1) − (y2 − y1)(x3 − x1);
+ * 
+ * se f(p1,p2,p3) > 0, p3 está à esquerda da reta p1p2.
+ */
+bool pontoEstaAEsquerdaDaReta(Ponto p, Reta r)
+{
+    return ((r.p2->x - r.p1->x) * (p.y - r.p1->y) - (r.p2->y - r.p1->y) * (p.x - r.p1->x)) > 0;
+}
+
+/**
+ * Função que calcula a distância entre um ponto e uma reta.
+ * 
+ * Para fazer o cálculo entre o ponto p3(x3,y3) e a reta p1(x1,y1)p2(x2,y2),
+ * faz-se:
+ * d(p1,p2,p3) = sqrt(((x2 − x1)(y3 − y1) − (y2 − y1)(x3 − x1))^2) / sqrt(((x2 − x1)^2 + (y2 − y1)^2))
+ * 
+ */
+float distanciaEntrePontoEReta(Ponto p, Reta r)
+{
+    return (float)(sqrt(pow(((r.p2->x - r.p1->x) * (p.y - r.p1->y) - (r.p2->y - r.p1->y) * (p.x - r.p1->x)), 2)) /
+                   sqrt(pow((r.p2->x - r.p1->x), 2) + pow(r.p2->y - r.p1->y, 2)));
+}
+
+/**
+ * Função que ordena o conjunto de pontos com valor de x crescente,
+ * e retorna um vetor `v`, onde `v[0]` é o ponto extremo à esquerda e 
+ * `v[1]` é o ponto extremo à direita.
+ * 
+ * O critério de escolha é o maior x para o máximo e o menor x para o mínimo.
+ * Em caso de empate, maior y para o menor, menor y para o maior
+ * 
+ *  1. Duas variáveis são criadas para armazenar os valores intermediários dos 
+ *     resultados buscados.
+ *  2. Percorre o vetor de pontos para buscar os extremos
+ *  3. Atualiza o ponto mínimo escolhido caso o ponto em análise atenda aos 
+ *     critérios. (menor x, e maior y em caso de empate).
+ *  4. Atualiza o ponto máximo escolhido caso o ponto em análise atenda aos 
+ *     critérios. (maior x, e menor y em caso de empate).
+ *  5. Retorna um arraycom o mínimo na primeira posição e o máximo na segunda.
+ */
+vector<Ponto> pontosExtremos(vector<Ponto> pontos)
+{
+    // 1
+    Ponto pontoMinimo = pontos[0], pontoMaximo = pontos[0];
+
+    // 2
+    for (const Ponto &ponto : pontos)
+    {
+        // 3
+        if (pontoMinimo.x > ponto.x || (pontoMinimo.x == ponto.x && pontoMinimo.y < ponto.y))
+        {
+            pontoMinimo = ponto;
+        }
+
+        // 4
+        if (pontoMaximo.x < ponto.x || (pontoMaximo.x == ponto.x && pontoMaximo.y > ponto.y))
+        {
+            pontoMaximo = ponto;
+        }
+    }
+
+    // 5
+    return {pontoMinimo, pontoMaximo};
+}
+
+/**
+ * Função que retorna o ponto presente em um conjunto, que está mais distante
+ * de uma reta `r` informada.
+ * 
+ *  1. Duas variáveis são criadas para armazenar o ponto mais distânte da reta 
+ *     a cada iteração do loop
+ *  2. Percorre o vetor de pontos.
+ *  3. Se a distância entre o ponto em análise e a reta for maior do que a 
+ *     previamente registrada, o ponto mais distânte é atualizado, juntamente
+ *     com o valor da distância.
+ *  4. Retorna o ponto mais distânte da reta.
+ */
+Ponto pontoMaisDistanteDaReta(vector<Ponto> pontos, Reta r)
+{
+    // 1
+    Ponto pontoMaisDistante;
+    float maiorDistancia = -1;
+
+    // 2
+    for (const Ponto &ponto : pontos)
+    {
+        // 3
+        float distancia = distanciaEntrePontoEReta(ponto, r);
+        if (distancia > maiorDistancia)
+        {
+            maiorDistancia = distancia;
+            pontoMaisDistante = ponto;
+        }
+    }
+
+    // 4
+    return pontoMaisDistante;
+}
+
+/**
+ * Função que calcula o fecho convexo de um conjunto de pontos
+ * 
+ * TODO-> Finalizar função e documentar
+ *  
+ */
+vector<Ponto> quickHull(vector<Ponto> pontos, Ponto p, Ponto q)
+{
+    if (pontos.size() <= 2)
+    {
+        vector<Ponto> fechoConvexo;
+        fechoConvexo.push_back(p);
+        fechoConvexo.push_back(q);
+        return fechoConvexo;
+    }
+
+    vector<Ponto> pontosAEsquerda, pontosADireita;
+
+    for (const Ponto &ponto : pontos)
+    {
+        if (pontoEstaAEsquerdaDaReta(ponto, Reta(p, q)))
+        {
+            pontosAEsquerda.push_back(ponto);
+        }
+        else
+        {
+            pontosADireita.push_back(ponto);
+        }
+    }
+
+    Ponto pontoAEsquerda = pontoMaisDistanteDaReta(pontosAEsquerda, Reta(p, q));
+    quickHull(pontosAEsquerda, p, pontoAEsquerda);
+
+    Ponto pontoADireita = pontoMaisDistanteDaReta(pontosADireita, Reta(p, q));
+    quickHull(pontosADireita, p, pontoADireita);
+}
+
+/**
+ * Função que abre o arquivo de entrada do programa e retorna um vetor de
+ * pontos.
+ * 
+ * A entrada é no formato:
+ * 
+ * n
+ * x1 y1
+ * x2 y2
+ * ...
+ * xn yn
+ * 
+ * Onde `n` é a quantidade de pontos, bem como `xn` e `yn` as coordenadas de
+ * cada ponto.
+ * 
+ *  1. Abre o arquivo de entrada no modo de leitura.
+ *  2. Verifica se o arquivo foi aberto com sucesso.
+ *  3. Cria as variáveis a serem utilizadas.
+ *  4. Joga a primeira linha do arquivo no lixo.
+ *  5. Recebe cada linha do arquivo e adiciona um ponto correspondente no
+ *     vetor de pontos.
+ *  6. Fecha o arquivo e retorna o vetor de pontos.
+ */
+vector<Ponto> lerPontosDoArquivoDeEntrada(char *nome)
+{
+    // 1
+    ifstream arquivo(nome);
+
+    // 2
+    if (arquivo.fail())
+    {
+        cerr << "Erro ao abrir arquivo" << endl;
+        arquivo.close();
         exit(1);
     }
 
+    // 3
+    vector<Ponto> pontos;
     string line;
     int x, y;
-    int num_coordinates;
 
-    inFile >> num_coordinates;
-    vector<Point> coordinates;
+    // 4
+    arquivo >> x;
 
-    int count = 0;
-    while (getline(inFile, line)) {
-        inFile >> x >> y;
-
-        Point point;
-        point.x = x;
-        point.y = y;
-
-        coordinates.push_back(point);
-
-        count++;
+    // 5
+    while (getline(arquivo, line))
+    {
+        arquivo >> x >> y;
+        Ponto p = Ponto(x, y);
+        pontos.push_back(p);
     }
 
-    inFile.close();
-
-    return coordinates;
-}
-
-/*
-* Calcula a distância entre dois pontos pelo Teorema e Pitagoras
-*
-* entrada: dois Pontos com suas coordenadas
-*
-* saída: Retorna um vetor de pontos, com as coordenadas x e y
-*/
-// TODO: vamos usar?
-float getDistanceBetweenPoints(Point p1, Point p2) {
-    return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
-}
-
-/*
-* Retorna a posição de um ponto em relação a outros dois
-*
-* entrada: três Pontos com suas coordenadas
-*
-* saída: Retorna um número
-*        se > 0, p3 está À esquerda de p2p1
-*        se < 0, p3 está À direita de p2p1
-*        se = 0, p3 é coincidente a p2p1
-*/
-double getPointPosition(Point p1, Point p2, Point p3) {
-    int firstPointX = p2.x - p1.x;
-    int firstPointY = p3.y - p1.y;
-    int secondPointY = p2.y - p1.y;
-    int secondPointX = p3.x - p1.x;
-
-    return (firstPointX * firstPointY) - (secondPointY * secondPointX);
+    // 6
+    arquivo.close();
+    return pontos;
 }
 
 /**
- * @param p1: primeiro ponto da reta
- * @param p2: segundo ponto da reta
- * @param p3: ponto fora da reta
- * @return distancia entre o ponto e a reta
- * */
-double calculateDistanceBetweenPointAndRect(Point p1, Point p2, Point p3) {
-    double position = getPointPosition(p1, p2, p3);
-    double squareRoot = sqrt(pow(position, 2));
-    double u = pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2);
-
-    return squareRoot/u;
-}
-
-/**
- * @param points: vetor com todos os pontos
- * @return vetor com os dois pontos extremos
- * */
-vector<Point> getEdgePoints(vector<Point> points) {
-    Point minimumXpoint = points[0];
-    Point maximumXpoint = points[0];
-
-    for (int i = 0; i <= points.size() - 1; i++) {
-        if (minimumXpoint.x > points[i].x || (minimumXpoint.x == points[i].x && minimumXpoint.y < points[i].y) ) {
-            minimumXpoint = points[i];
-           
-        }    
-        if (maximumXpoint.x < points[i].x || (maximumXpoint.x == points[i].x && maximumXpoint.y > points[i].y) ) {
-            maximumXpoint = points[i];
-        }
-    }
-
-    vector<Point> edges;
-    edges.push_back(minimumXpoint);
-    edges.push_back(maximumXpoint);
-
-    return edges;
-}
-
-Point edgePoint(vector<Point> points, Point p, Point q) {
-    Point foundPoint;
-    double distanceFound = -1;
-
-    for(int i = 0; i < points.size(); i++) {
-        double distance = calculateDistanceBetweenPointAndRect(p, q, points[i]);
-        if (distanceFound < distance) {
-            distanceFound = distance;
-            foundPoint = points[i];
-        }
-    }
-
-    return foundPoint;
-}
-
-vector<Point> convexHull(vector<Point> points, Point p, Point q) {
-
-    if (points.size() <= 2) {
-        vector<Point> v;
-        v.push_back(p);
-        v.push_back(q);
-        return v;
-    }
-
-    vector<Point> toTheRight;
-    vector<Point> toTheLeft;
-
-    for(int i = 0; i < points.size(); i++) {
-        double position = getPointPosition(p, q, points[i]);
-        if (position > 0) {
-            //ponto esta a esquerda da reta pq
-            toTheLeft.push_back(points[i]);
-        } else if (position < 0) {
-            //ponto esta a direita da reta pq
-            toTheRight.push_back(points[i]);
-        }
-    }
-
-    Point leftPoint = edgePoint(toTheLeft, p, q);
-    convexHull(toTheLeft, p, leftPoint);
-
-    Point rightPoint = edgePoint(toTheRight, p, q);
-    convexHull(toTheRight, p, rightPoint);
-}
-
-/**
- * Verifica se existe um arquivo com o nome passado como parâmetro para a função
+ * Função que recebe os pontos do fecho convexo em ordem anti-horária e 
+ * cria um arquivo no formato:
+ * 
+ * x1 y1
+ * x2 y2
+ * ...
+ * xn yn
+ * 
+ * Onde `xn` e `yn` são as coordenadas de cada ponto.
+ * 
+ *  1. Cria um novo arquivo no modo de escrita.
+ *  2. Preenche cada linha do arquivo com um ponto correspondente do
+ *     fecho convexo.
+ *  3. Fecha o arquivo.
+ * 
  */
-bool fileExists(const char *fileName) {
-    std::ifstream infile(fileName);
+void criarArquivoDeSaida(vector<Ponto> feixoConvexo, string nome)
+{
+    // 1
+    ofstream arquivo(nome);
+
+    // 2
+    for (const Ponto &ponto : feixoConvexo)
+    {
+        arquivo << ponto.x << " " << ponto.y << endl;
+    }
+
+    // 3
+    arquivo.close();
+}
+
+/**
+ * 1. Verifica se o arquivo existe no diretório
+ */
+bool arquivoExiste(const char *fileName)
+{
+    // 1
+    ifstream infile(fileName);
     return infile.good();
 }
-  
-int main(int argc, char** argv) {
-    if(argc != 2 || !fileExists(argv[1])) {
-        cout << "Uso: ./hull input_file.txt\n" << endl;
-		return 1;
-	}
 
-    vector<Point> coordinates;
-
-    coordinates = readCoordinates(argv[1]);
-
-    for (int i = 0; i <= coordinates.size() - 1; i++) {
-        // cout << coordinates[i].x << " " << coordinates[i].y << endl;
+/**
+ * Função de entrada do programa
+ * 
+ *  1. Trata a entrada do programa para aceitar o arquivo de pontos.
+ *  2. Lê o arquivo de entrada e criar um vetor de pontos.
+ *  3. Inicia o contador de tempo.
+ *  4. Calcula os pontos extremos do conjunto de dados e executa o algoritmo 
+ *     quickHull para obter o fecho convexo do vetor de pontos.
+ *  5. Contabiliza o tempo decorrido e mostra no terminal.
+ *  6. Cria o arquivo de saída com a representação do fecho convexo.
+ */
+int main(int argc, char **argv)
+{
+    // 1
+    if (argc != 2 || !arquivoExiste(argv[1]))
+    {
+        cout
+            << "Uso: ./hull input_file.txt\n"
+            << endl;
+        return 1;
     }
 
-    Point a;
-    a.x = 0;
-    a.y = 0;
-    Point b;
-    b.x = 0;
-    b.y = 10;
-    Point c;
-    c.x = 10;
-    c.y = 10;
-    Point d;
-    d.x = 10;
-    d.y = 0;
+    // 2
+    vector<Ponto> pontos = lerPontosDoArquivoDeEntrada(argv[1]);
 
-    vector<Point> v;
-    v.push_back(a);
-    v.push_back(b);
-    v.push_back(c);
-    v.push_back(d);
+    // 3
+    auto inicio = high_resolution_clock::now();
+
+    // 4
+    vector<Ponto> extremos = pontosExtremos(pontos);
+    vector<Ponto> fechoConvexo = quickHull(pontos, extremos[0], extremos[1]);
+
+    // 5
+    auto fim = high_resolution_clock::now();
+    auto tempo = duration_cast<microseconds>(fim - inicio);
+    cout << fixed << setprecision(6) << (float)(tempo.count()) / 1000000 << endl;
+
+    // 6
+    criarArquivoDeSaida(fechoConvexo, "fecho.txt");
 
     return 0;
 }
