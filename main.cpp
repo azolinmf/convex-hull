@@ -79,10 +79,31 @@ float pontoEstaAEsquerdaDaReta(Ponto p, Reta r)
  * d(p1,p2,p3) = sqrt(((x2 − x1)(y3 − y1) − (y2 − y1)(x3 − x1))^2) / sqrt(((x2 − x1)^2 + (y2 − y1)^2))
  * 
  */
-float distanciaEntrePontoEReta(Ponto p, Reta r)
+// double distanciaEntrePontoEReta(Ponto p, Reta r)
+// {
+
+
+//     return sqrt(pow(((r.p2->x - r.p1->x) * (p.y - r.p1->y) - (r.p2->y - r.p1->y) * (p.x - r.p1->x)), 2)) /
+//                    sqrt(pow((r.p2->x - r.p1->x), 2) + pow(r.p2->y - r.p1->y, 2));
+// }
+
+double getPointPosition(Ponto p1, Ponto p2, Ponto p3)
 {
-    return (float)(sqrt(pow(((r.p2->x - r.p1->x) * (p.y - r.p1->y) - (r.p2->y - r.p1->y) * (p.x - r.p1->x)), 2)) /
-                   sqrt(pow((r.p2->x - r.p1->x), 2) + pow(r.p2->y - r.p1->y, 2)));
+    int firstPointX = p2.x - p1.x;
+    int firstPointY = p3.y - p1.y;
+    int secondPointY = p2.y - p1.y;
+    int secondPointX = p3.x - p1.x;
+
+    return (firstPointX * firstPointY) - (secondPointY * secondPointX);
+}
+
+double distanciaEntrePontoEReta(Ponto p1, Ponto p2, Ponto p3)
+{
+    double position = getPointPosition(p1, p2, p3);
+    double squareRoot = sqrt(pow(position, 2));
+    double u = pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2);
+
+    return squareRoot / u;
 }
 
 /**
@@ -143,17 +164,17 @@ vector<Ponto> pontosExtremos(vector<Ponto> pontos)
  *     com o valor da distância.
  *  4. Retorna o ponto mais distânte da reta.
  */
-Ponto pontoMaisDistanteDaReta(vector<Ponto> pontos, Reta r)
+Ponto pontoMaisDistanteDaReta(Ponto p, Ponto q, vector<Ponto> pontos)
 {
     // 1
     Ponto pontoMaisDistante;
-    float maiorDistancia = -1;
+    double maiorDistancia = -1;
 
     // 2
     for (const Ponto &ponto : pontos)
     {
         // 3
-        float distancia = distanciaEntrePontoEReta(ponto, r);
+        double distancia = distanciaEntrePontoEReta(p, q, ponto);
         if (distancia > maiorDistancia)
         {
             maiorDistancia = distancia;
@@ -207,15 +228,23 @@ vector<Ponto> quickHull(vector<Ponto> pontos, Ponto p, Ponto q)
         }
     }
 
-    Ponto pontoAEsquerda = pontoMaisDistanteDaReta(pontosAEsquerda, Reta(p, q));
-    vector<Ponto> lista1 = quickHull(pontosAEsquerda, p, pontoAEsquerda);
+    vector<Ponto> lista1;
+    if (pontosAEsquerda.size() != 0)
+    {
+        //Ponto pontoAEsquerda = pontoMaisDistanteDaReta(pontosAEsquerda, Reta(p, q));
+        Ponto pontoAEsquerda = pontoMaisDistanteDaReta(p, q, pontosAEsquerda);
+        lista1 = quickHull(pontosAEsquerda, p, pontoAEsquerda);
+    }
 
+    vector<Ponto> lista2;
     if (pontosADireita.size() != 0)
     {
+        //Ponto pontoADireita = pontoMaisDistanteDaReta(pontosADireita, Reta(p, q));
+        Ponto pontoADireita = pontoMaisDistanteDaReta(q, p, pontosADireita);
+        lista2 = quickHull(pontosADireita, pontoADireita, p);
     }
-    Ponto pontoADireita = pontoMaisDistanteDaReta(pontosADireita, Reta(p, q));
-    vector<Ponto> lista2 = quickHull(pontosADireita, p, pontoADireita);
 
+    lista1.push_back(q);
     lista1.insert(lista1.end(), lista2.begin(), lista2.end());
 
     return lista1;

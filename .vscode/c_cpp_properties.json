@@ -6,11 +6,15 @@
         "${workspaceFolder}/**"
       ],
       "defines": [],
-      "compilerPath": "/usr/bin/gcc",
+      "compilerPath": "gcc",
       "cStandard": "${default}",
-      "cppStandard": "c++20",
+      "cppStandard": "${default}",
       "intelliSenseMode": "macos-gcc-x64",
-      "compilerArgs": []
+      "compilerArgs": [
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic"
+      ]
     }
   ],
   "version": 4
