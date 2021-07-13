@@ -1,19 +1,9 @@
 {
-  "C_Cpp_Runner.cCompilerPath": "/usr/bin/gcc",
-  "C_Cpp_Runner.cppCompilerPath": "/usr/bin/clang++",
-  "C_Cpp_Runner.debuggerPath": "/Users/fernanda/.vscode/extensions/ms-vscode.cpptools-1.0.1/debugAdapters/lldb-mi",
-  "C_Cpp_Runner.makePath": "/usr/bin/make",
-  "C_Cpp_Runner.warnings": [],
-  "C_Cpp_Runner.compilerArgs": [],
-  "C_Cpp_Runner.includePaths": [],
-  "C_Cpp_Runner.linkerArgs": [],
-  "C_Cpp_Runner.cStandard": "",
-  "C_Cpp_Runner.cppStandard": "c++20",
-  "C_Cpp_Runner.excludeSearch": [],
-  "C_Cpp_Runner.enableWarnings": true,
-  "C_Cpp_Runner.warningsAsError": false,
-  "files.associations": {
-    "vector": "cpp",
-    "iostream": "cpp"
-  }
+    "files.associations": {
+        "*.html": "html",
+        "*.env.*": "env",
+        "*.prettierrc": "json",
+        "*.config": "yaml",
+        "vector": "cpp"
+    }
 }

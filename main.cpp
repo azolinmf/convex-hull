@@ -66,9 +66,9 @@ public:
  * 
  * se f(p1,p2,p3) > 0, p3 está à esquerda da reta p1p2.
  */
-bool pontoEstaAEsquerdaDaReta(Ponto p, Reta r)
+float pontoEstaAEsquerdaDaReta(Ponto p, Reta r)
 {
-    return ((r.p2->x - r.p1->x) * (p.y - r.p1->y) - (r.p2->y - r.p1->y) * (p.x - r.p1->x)) > 0;
+    return (r.p2->x - r.p1->x) * (p.y - r.p1->y) - (r.p2->y - r.p1->y) * (p.x - r.p1->x);
 }
 
 /**
@@ -173,23 +173,35 @@ Ponto pontoMaisDistanteDaReta(vector<Ponto> pontos, Reta r)
  */
 vector<Ponto> quickHull(vector<Ponto> pontos, Ponto p, Ponto q)
 {
-    if (pontos.size() <= 2)
+    if (pontos.size() == 2)
     {
         vector<Ponto> fechoConvexo;
         fechoConvexo.push_back(p);
         fechoConvexo.push_back(q);
         return fechoConvexo;
     }
+    else if (pontos.size() == 1)
+    {
+        vector<Ponto> fechoConvexo;
+        fechoConvexo.push_back(q);
+        return fechoConvexo;
+    }
+    else if (pontos.size() == 0)
+    {
+        vector<Ponto> a;
+        return a;
+    }
 
     vector<Ponto> pontosAEsquerda, pontosADireita;
 
     for (const Ponto &ponto : pontos)
     {
-        if (pontoEstaAEsquerdaDaReta(ponto, Reta(p, q)))
+        float result = pontoEstaAEsquerdaDaReta(ponto, Reta(p, q));
+        if (result > 0)
         {
             pontosAEsquerda.push_back(ponto);
         }
-        else
+        else if (result < 0)
         {
             pontosADireita.push_back(ponto);
         }
@@ -198,6 +210,9 @@ vector<Ponto> quickHull(vector<Ponto> pontos, Ponto p, Ponto q)
     Ponto pontoAEsquerda = pontoMaisDistanteDaReta(pontosAEsquerda, Reta(p, q));
     vector<Ponto> lista1 = quickHull(pontosAEsquerda, p, pontoAEsquerda);
 
+    if (pontosADireita.size() != 0)
+    {
+    }
     Ponto pontoADireita = pontoMaisDistanteDaReta(pontosADireita, Reta(p, q));
     vector<Ponto> lista2 = quickHull(pontosADireita, p, pontoADireita);
 
@@ -353,7 +368,8 @@ int main(int argc, char **argv)
     a.push_back(Ponto(3,3));
     */
 
-    for (int i=0; i< fechoConvexo.size(); i++) {
+    for (int i = 0; i < fechoConvexo.size(); i++)
+    {
         cout << "x: " << fechoConvexo[i].x << " y: " << fechoConvexo[i].y << endl;
     }
 
