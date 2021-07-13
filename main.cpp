@@ -5,8 +5,8 @@
  * partir de um conjunto de pontos.
  * 
  * Alunos:
- * XXXXXXX - Maria Fernanda Azolin
- * XXXXXXX - Flávia 
+ * 1508920 - Maria Fernanda Azolin
+ * 1976744 - Flavia Gouvea Santos
  * 1942808 - Otávio Baziewicz Filho
  * 
  */
@@ -124,7 +124,11 @@ vector<Ponto> pontosExtremos(vector<Ponto> pontos)
     }
 
     // 5
-    return {pontoMinimo, pontoMaximo};
+    vector<Ponto> extremos;
+    extremos.push_back(pontoMinimo);
+    extremos.push_back(pontoMaximo);
+
+    return extremos;
 }
 
 /**
@@ -192,10 +196,14 @@ vector<Ponto> quickHull(vector<Ponto> pontos, Ponto p, Ponto q)
     }
 
     Ponto pontoAEsquerda = pontoMaisDistanteDaReta(pontosAEsquerda, Reta(p, q));
-    quickHull(pontosAEsquerda, p, pontoAEsquerda);
+    vector<Ponto> lista1 = quickHull(pontosAEsquerda, p, pontoAEsquerda);
 
     Ponto pontoADireita = pontoMaisDistanteDaReta(pontosADireita, Reta(p, q));
-    quickHull(pontosADireita, p, pontoADireita);
+    vector<Ponto> lista2 = quickHull(pontosADireita, p, pontoADireita);
+
+    lista1.insert(lista1.end(), lista2.begin(), lista2.end());
+
+    return lista1;
 }
 
 /**
@@ -336,6 +344,18 @@ int main(int argc, char **argv)
 
     // 6
     criarArquivoDeSaida(fechoConvexo, "fecho.txt");
+
+    /*vector<Ponto> a;
+    vector<Ponto> b;
+
+    a.push_back(Ponto(1,1));
+    b.push_back(Ponto(2,2));
+    a.push_back(Ponto(3,3));
+    */
+
+    for (int i=0; i< fechoConvexo.size(); i++) {
+        cout << "x: " << fechoConvexo[i].x << " y: " << fechoConvexo[i].y << endl;
+    }
 
     return 0;
 }
