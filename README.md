@@ -11,10 +11,3 @@ O script gera um arquivo de entrada com base na entrada informada e executa o pr
 ```shell
 ./simulate.sh
 ```
-
-## Execução rápida
-O script executa o programa rapidamente com o arquivo de entrada debug/input.txt
-```shell
-make
-./run.sh
-```
