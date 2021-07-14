@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "*.html": "html",
-        "*.env.*": "env",
-        "*.prettierrc": "json",
-        "*.config": "yaml",
-        "vector": "cpp"
-    }
-}
