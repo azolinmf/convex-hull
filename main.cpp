@@ -133,46 +133,50 @@ vector<Ponto> pontosExtremos(vector<Ponto> pontos)
     return extremos;
 }
 
+/**
+ * TODO -> documentação
+ */
 void findHull(vector<Ponto> *fechoConvexo, vector<Ponto> pontos, Reta r)
 {
     if (pontos.size() == 0)
         return;
 
-    float maxDist = 0;
-    Ponto maxPoint;
+    float distanciaMaxima = 0;
+    Ponto pontoMaisDistante;
     for (const Ponto &ponto : pontos)
     {
-        float pointDist = distanciaEntrePontoEReta(ponto, r);
-        if (pointDist > maxDist)
+        float distancia = distanciaEntrePontoEReta(ponto, r);
+        if (distancia > distanciaMaxima)
         {
-            maxDist = pointDist;
-            maxPoint = ponto;
+            distanciaMaxima = distancia;
+            pontoMaisDistante = ponto;
         }
     }
 
     vector<Ponto>::iterator it = find(fechoConvexo->begin(), fechoConvexo->begin() + fechoConvexo->size(), r.p1);
-    fechoConvexo->insert(it + 1, maxPoint);
+    fechoConvexo->insert(it + 1, pontoMaisDistante);
 
-    vector<Ponto> s1; //direita de (r.p1, maxPoint)
+    vector<Ponto> s1; //direita de (r.p1, pontoMaisDistante)
+    vector<Ponto> s2; //direita de (pontoMaisDistante, r.p2)
+
     for (const Ponto &ponto : pontos)
     {
-        int lado = pontoEstaAEsquerdaDaReta(ponto, Reta(r.p1, maxPoint));
-        if (lado == -1)
+        int lado1 = pontoEstaAEsquerdaDaReta(ponto, Reta(r.p1, pontoMaisDistante));
+        if (lado1 == -1)
             s1.push_back(ponto);
-    }
 
-    vector<Ponto> s2; //direita de (maxPoint, r.p2)
-    for (const Ponto &ponto : pontos)
-    {
-        int lado = pontoEstaAEsquerdaDaReta(ponto, Reta(maxPoint, r.p2));
-        if (lado == -1)
+        int lado2 = pontoEstaAEsquerdaDaReta(ponto, Reta(pontoMaisDistante, r.p2));
+        if (lado2 == -1)
             s2.push_back(ponto);
     }
 
-    findHull(fechoConvexo, s1, Reta(r.p1, maxPoint));
-    findHull(fechoConvexo, s2, Reta(maxPoint, r.p2));
+    findHull(fechoConvexo, s1, Reta(r.p1, pontoMaisDistante));
+    findHull(fechoConvexo, s2, Reta(pontoMaisDistante, r.p2));
 }
 
+/**
+ * TODO -> documentação
+ */
 vector<Ponto> quickHull(vector<Ponto> pontos)
 {
     vector<Ponto> fechoConvexo;
@@ -182,20 +186,15 @@ vector<Ponto> quickHull(vector<Ponto> pontos)
     fechoConvexo.insert(fechoConvexo.begin() + 1, extremos[1]);
 
     vector<Ponto> s1; //direita de Reta(extremos[0], extremos[1])
+    vector<Ponto> s2; //direita de Reta(extremos[1], extremos[0])
+
     for (const Ponto &ponto : pontos)
     {
         int val = pontoEstaAEsquerdaDaReta(ponto, Reta(extremos[0], extremos[1]));
 
         if (val == -1)
             s1.push_back(ponto);
-    }
-
-    vector<Ponto> s2; //direita de Reta(extremos[1], extremos[0])
-    for (const Ponto &ponto : pontos)
-    {
-        int val = pontoEstaAEsquerdaDaReta(ponto, Reta(extremos[1], extremos[0]));
-
-        if (val == -1)
+        else if (val == 1)
             s2.push_back(ponto);
     }
 
