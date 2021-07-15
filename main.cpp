@@ -1,7 +1,7 @@
 /**
  * Projeto e Análise de Algoritmos
  * 
- * Implementação do algoritmo QuickHull para a cálculo fecho convexo a
+ * Implementação do algoritmo QuickHull para a calculo fecho convexo a
  * partir de um conjunto de pontos.
  * 
  * Alunos:
@@ -14,61 +14,77 @@
 // Manipulação de arquivos
 #include <iostream>
 #include <fstream>
-
-// Estrutura de dadoss e funções matemáticas
+// Estrutura de dados e funções matemáticas
 #include <vector>
 #include <math.h>
-
-// Cálculo do tempo de execução
+// Cálculo do tempo
 #include <chrono>
 
 using namespace std::chrono;
 using namespace std;
 
-class Ponto
+/**
+ * Estrutura de dados que representa um ponto com coordenadas x e y
+ */
+struct Ponto
 {
-public:
-    float x;
-    float y;
+    float x, y;
 
     Ponto()
     {
-        this->x = 0;
-        this->y = 0;
+        x = 0, y = 0;
     }
 
-    Ponto(float x, float y)
+    Ponto(const float px, const float py)
     {
-        this->x = x;
-        this->y = y;
+        x = px, y = py;
     }
-};
 
-class Reta
-{
-public:
-    Ponto *p1;
-    Ponto *p2;
-
-    Reta(Ponto p1, Ponto p2)
+    friend bool operator==(const Ponto &p1, const Ponto &p2)
     {
-        this->p1 = &p1;
-        this->p2 = &p2;
+        return p1.x == p2.x && p1.y == p2.y;
     }
 };
 
 /**
- * Função que verifica se o ponto está à esquerda da reta.
+ * Estrutura de dados que representa uma reta direcionada de um ponto p1 até
+ * um ponto p2
+ */
+struct Reta
+{
+    Ponto p1, p2;
+
+    Reta()
+    {
+        this->p1 = Ponto(), this->p2 = Ponto();
+    }
+
+    Reta(Ponto p1, Ponto p2)
+    {
+        this->p1 = p1, this->p2 = p2;
+    }
+};
+
+/**
+ * Função que verifica se o ponto está à esquerda da reta, à direita ou sobre a reta.
  * 
  * Para verificar se p3(x3,y3) está à esquerda da reta p1(x1,y1)p2(x2,y2),
  * calcula-se: 
  * f(p1,p2,p3) = (x2 − x1)(y3 − y1) − (y2 − y1)(x3 − x1);
  * 
- * se f(p1,p2,p3) > 0, p3 está à esquerda da reta p1p2.
+ * se f(p1,p2,p3) > 0, p3 está à esquerda da reta p1p2. Retorna 1
+ * se f(p1,p2,p3) < 0, p3 está à direita da reta p1p2. Retorna -1
+ * se f(p1,p2,p3) = 0, p3 está sobre a reta p1p2. Retorna 0
  */
-float pontoEstaAEsquerdaDaReta(Ponto p, Reta r)
+int pontoEstaAEsquerdaDaReta(Ponto p, Reta r)
 {
-    return (r.p2->x - r.p1->x) * (p.y - r.p1->y) - (r.p2->y - r.p1->y) * (p.x - r.p1->x);
+    float area = ((r.p2.x - r.p1.x) * (p.y - r.p1.y)) - ((r.p2.y - r.p1.y) * (p.x - r.p1.x));
+
+    if (area > 0)
+        return 1;
+    if (area < 0)
+        return -1;
+    return 0;
 }
 
 /**
@@ -77,177 +93,115 @@ float pontoEstaAEsquerdaDaReta(Ponto p, Reta r)
  * Para fazer o cálculo entre o ponto p3(x3,y3) e a reta p1(x1,y1)p2(x2,y2),
  * faz-se:
  * d(p1,p2,p3) = sqrt(((x2 − x1)(y3 − y1) − (y2 − y1)(x3 − x1))^2) / sqrt(((x2 − x1)^2 + (y2 − y1)^2))
- * 
  */
-// double distanciaEntrePontoEReta(Ponto p, Reta r)
-// {
-
-
-//     return sqrt(pow(((r.p2->x - r.p1->x) * (p.y - r.p1->y) - (r.p2->y - r.p1->y) * (p.x - r.p1->x)), 2)) /
-//                    sqrt(pow((r.p2->x - r.p1->x), 2) + pow(r.p2->y - r.p1->y, 2));
-// }
-
-double getPointPosition(Ponto p1, Ponto p2, Ponto p3)
+float distanciaEntrePontoEReta(Ponto p, Reta r)
 {
-    int firstPointX = p2.x - p1.x;
-    int firstPointY = p3.y - p1.y;
-    int secondPointY = p2.y - p1.y;
-    int secondPointX = p3.x - p1.x;
+    float t1 = ((r.p2.x - r.p1.x) * (p.y - r.p1.y)) - ((r.p2.y - r.p1.y) * (p.x - r.p1.x));
+    float t2 = (r.p2.x - r.p1.x);
+    float t3 = (r.p2.y - r.p1.y);
 
-    return (firstPointX * firstPointY) - (secondPointY * secondPointX);
-}
-
-double distanciaEntrePontoEReta(Ponto p1, Ponto p2, Ponto p3)
-{
-    double position = getPointPosition(p1, p2, p3);
-    double squareRoot = sqrt(pow(position, 2));
-    double u = pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2);
-
-    return squareRoot / u;
+    return sqrtf(t1 * t1) / sqrtf((t2 * t2) + (t3 * t3));
 }
 
 /**
- * Função que ordena o conjunto de pontos com valor de x crescente,
- * e retorna um vetor `v`, onde `v[0]` é o ponto extremo à esquerda e 
- * `v[1]` é o ponto extremo à direita.
+ * Função que retorna os pontos mais extremos dentro de um conjunto de pontos.
  * 
  * O critério de escolha é o maior x para o máximo e o menor x para o mínimo.
- * Em caso de empate, maior y para o menor, menor y para o maior
- * 
- *  1. Duas variáveis são criadas para armazenar os valores intermediários dos 
- *     resultados buscados.
- *  2. Percorre o vetor de pontos para buscar os extremos
- *  3. Atualiza o ponto mínimo escolhido caso o ponto em análise atenda aos 
- *     critérios. (menor x, e maior y em caso de empate).
- *  4. Atualiza o ponto máximo escolhido caso o ponto em análise atenda aos 
- *     critérios. (maior x, e menor y em caso de empate).
- *  5. Retorna um arraycom o mínimo na primeira posição e o máximo na segunda.
+ * Em caso de empate, maior y para o menor, menor y para o maior.
  */
 vector<Ponto> pontosExtremos(vector<Ponto> pontos)
 {
-    // 1
-    Ponto pontoMinimo = pontos[0], pontoMaximo = pontos[0];
+    Ponto pontoMaximo = pontos[0];
+    Ponto pontoMinimo = pontos[0];
 
-    // 2
     for (const Ponto &ponto : pontos)
     {
-        // 3
-        if (pontoMinimo.x > ponto.x || (pontoMinimo.x == ponto.x && pontoMinimo.y < ponto.y))
-        {
-            pontoMinimo = ponto;
-        }
-
-        // 4
-        if (pontoMaximo.x < ponto.x || (pontoMaximo.x == ponto.x && pontoMaximo.y > ponto.y))
+        if (ponto.x > pontoMaximo.x || (ponto.x == pontoMaximo.x && ponto.y < pontoMaximo.y))
         {
             pontoMaximo = ponto;
         }
+
+        if (ponto.x < pontoMinimo.x || (ponto.x == pontoMinimo.x && ponto.y > pontoMinimo.y))
+        {
+            pontoMinimo = ponto;
+        }
     }
 
-    // 5
     vector<Ponto> extremos;
     extremos.push_back(pontoMinimo);
     extremos.push_back(pontoMaximo);
-
     return extremos;
 }
 
 /**
- * Função que retorna o ponto presente em um conjunto, que está mais distante
- * de uma reta `r` informada.
- * 
- *  1. Duas variáveis são criadas para armazenar o ponto mais distânte da reta 
- *     a cada iteração do loop
- *  2. Percorre o vetor de pontos.
- *  3. Se a distância entre o ponto em análise e a reta for maior do que a 
- *     previamente registrada, o ponto mais distânte é atualizado, juntamente
- *     com o valor da distância.
- *  4. Retorna o ponto mais distânte da reta.
+ * TODO -> documentação
  */
-Ponto pontoMaisDistanteDaReta(Ponto p, Ponto q, vector<Ponto> pontos)
+void findHull(vector<Ponto> *fechoConvexo, vector<Ponto> pontos, Reta r)
 {
-    // 1
-    Ponto pontoMaisDistante;
-    double maiorDistancia = -1;
+    if (pontos.size() == 0)
+        return;
 
-    // 2
+    float distanciaMaxima = 0;
+    Ponto pontoMaisDistante;
     for (const Ponto &ponto : pontos)
     {
-        // 3
-        double distancia = distanciaEntrePontoEReta(p, q, ponto);
-        if (distancia > maiorDistancia)
+        float distancia = distanciaEntrePontoEReta(ponto, r);
+        if (distancia > distanciaMaxima)
         {
-            maiorDistancia = distancia;
+            distanciaMaxima = distancia;
             pontoMaisDistante = ponto;
         }
     }
 
-    // 4
-    return pontoMaisDistante;
-}
+    vector<Ponto>::iterator it = find(fechoConvexo->begin(), fechoConvexo->begin() + fechoConvexo->size(), r.p1);
+    fechoConvexo->insert(it + 1, pontoMaisDistante);
 
-/**
- * Função que calcula o fecho convexo de um conjunto de pontos
- * 
- * TODO-> Finalizar função e documentar
- *  
- */
-vector<Ponto> quickHull(vector<Ponto> pontos, Ponto p, Ponto q)
-{
-    if (pontos.size() == 2)
-    {
-        vector<Ponto> fechoConvexo;
-        fechoConvexo.push_back(p);
-        fechoConvexo.push_back(q);
-        return fechoConvexo;
-    }
-    else if (pontos.size() == 1)
-    {
-        vector<Ponto> fechoConvexo;
-        fechoConvexo.push_back(q);
-        return fechoConvexo;
-    }
-    else if (pontos.size() == 0)
-    {
-        vector<Ponto> a;
-        return a;
-    }
-
-    vector<Ponto> pontosAEsquerda, pontosADireita;
+    vector<Ponto> s1; //direita de (r.p1, pontoMaisDistante)
+    vector<Ponto> s2; //direita de (pontoMaisDistante, r.p2)
 
     for (const Ponto &ponto : pontos)
     {
-        float result = pontoEstaAEsquerdaDaReta(ponto, Reta(p, q));
-        if (result > 0)
-        {
-            pontosAEsquerda.push_back(ponto);
-        }
-        else if (result < 0)
-        {
-            pontosADireita.push_back(ponto);
-        }
+        int lado1 = pontoEstaAEsquerdaDaReta(ponto, Reta(r.p1, pontoMaisDistante));
+        if (lado1 == -1)
+            s1.push_back(ponto);
+
+        int lado2 = pontoEstaAEsquerdaDaReta(ponto, Reta(pontoMaisDistante, r.p2));
+        if (lado2 == -1)
+            s2.push_back(ponto);
     }
 
-    vector<Ponto> lista1;
-    if (pontosAEsquerda.size() != 0)
+    findHull(fechoConvexo, s1, Reta(r.p1, pontoMaisDistante));
+    findHull(fechoConvexo, s2, Reta(pontoMaisDistante, r.p2));
+}
+
+/**
+ * TODO -> documentação
+ */
+vector<Ponto> quickHull(vector<Ponto> pontos)
+{
+    vector<Ponto> fechoConvexo;
+    vector<Ponto> extremos = pontosExtremos(pontos);
+
+    fechoConvexo.insert(fechoConvexo.begin(), extremos[0]);
+    fechoConvexo.insert(fechoConvexo.begin() + 1, extremos[1]);
+
+    vector<Ponto> s1; //direita de Reta(extremos[0], extremos[1])
+    vector<Ponto> s2; //direita de Reta(extremos[1], extremos[0])
+
+    for (const Ponto &ponto : pontos)
     {
-        //Ponto pontoAEsquerda = pontoMaisDistanteDaReta(pontosAEsquerda, Reta(p, q));
-        Ponto pontoAEsquerda = pontoMaisDistanteDaReta(p, q, pontosAEsquerda);
-        lista1 = quickHull(pontosAEsquerda, p, pontoAEsquerda);
+        int val = pontoEstaAEsquerdaDaReta(ponto, Reta(extremos[0], extremos[1]));
+
+        if (val == -1)
+            s1.push_back(ponto);
+        else if (val == 1)
+            s2.push_back(ponto);
     }
 
-    vector<Ponto> lista2;
-    if (pontosADireita.size() != 0)
-    {
-        //Ponto pontoADireita = pontoMaisDistanteDaReta(pontosADireita, Reta(p, q));
-        Ponto pontoADireita = pontoMaisDistanteDaReta(q, p, pontosADireita);
-        lista2 = quickHull(pontosADireita, pontoADireita, p);
-    }
+    findHull(&fechoConvexo, s1, Reta(extremos[0], extremos[1]));
+    findHull(&fechoConvexo, s2, Reta(extremos[1], extremos[0]));
 
-    lista1.push_back(q);
-    lista1.insert(lista1.end(), lista2.begin(), lista2.end());
-
-    return lista1;
+    return fechoConvexo;
 }
 
 /**
@@ -275,10 +229,8 @@ vector<Ponto> quickHull(vector<Ponto> pontos, Ponto p, Ponto q)
  */
 vector<Ponto> lerPontosDoArquivoDeEntrada(char *nome)
 {
-    // 1
     ifstream arquivo(nome);
 
-    // 2
     if (arquivo.fail())
     {
         cerr << "Erro ao abrir arquivo" << endl;
@@ -286,23 +238,24 @@ vector<Ponto> lerPontosDoArquivoDeEntrada(char *nome)
         exit(1);
     }
 
-    // 3
     vector<Ponto> pontos;
     string line;
-    int x, y;
+    int n, x, y;
 
-    // 4
-    arquivo >> x;
+    arquivo >> n;
+    if (n <= 2)
+    {
+        cerr << "Arquivo de entrada inválido" << endl;
+        arquivo.close();
+        exit(1);
+    }
 
-    // 5
     while (getline(arquivo, line))
     {
         arquivo >> x >> y;
-        Ponto p = Ponto(x, y);
-        pontos.push_back(p);
+        pontos.push_back(Ponto(x, y));
     }
 
-    // 6
     arquivo.close();
     return pontos;
 }
@@ -324,83 +277,46 @@ vector<Ponto> lerPontosDoArquivoDeEntrada(char *nome)
  *  3. Fecha o arquivo.
  * 
  */
-void criarArquivoDeSaida(vector<Ponto> feixoConvexo, string nome)
+void criarArquivoDeSaida(vector<Ponto> pontos, string nome)
 {
-    // 1
     ofstream arquivo(nome);
 
-    // 2
-    for (const Ponto &ponto : feixoConvexo)
+    for (const Ponto &ponto : pontos)
     {
         arquivo << ponto.x << " " << ponto.y << endl;
     }
 
-    // 3
     arquivo.close();
 }
 
 /**
- * 1. Verifica se o arquivo existe no diretório
+ * Função que verifica se o arquivo existe no diretório
  */
-bool arquivoExiste(const char *fileName)
+bool arquivoExiste(const char *nome)
 {
-    // 1
-    ifstream infile(fileName);
-    return infile.good();
+    ifstream arquivo(nome);
+    return arquivo.good();
 }
 
-/**
- * Função de entrada do programa
- * 
- *  1. Trata a entrada do programa para aceitar o arquivo de pontos.
- *  2. Lê o arquivo de entrada e criar um vetor de pontos.
- *  3. Inicia o contador de tempo.
- *  4. Calcula os pontos extremos do conjunto de dados e executa o algoritmo 
- *     quickHull para obter o fecho convexo do vetor de pontos.
- *  5. Contabiliza o tempo decorrido e mostra no terminal.
- *  6. Cria o arquivo de saída com a representação do fecho convexo.
- */
 int main(int argc, char **argv)
 {
-    // 1
     if (argc != 2 || !arquivoExiste(argv[1]))
     {
-        cout
-            << "Uso: ./hull input_file.txt\n"
-            << endl;
+        cout << "Uso: ./hull input_file.txt" << endl;
         return 1;
     }
 
-    // 2
     vector<Ponto> pontos = lerPontosDoArquivoDeEntrada(argv[1]);
 
-    // 3
     auto inicio = high_resolution_clock::now();
 
-    // 4
-    vector<Ponto> extremos = pontosExtremos(pontos);
-    vector<Ponto> fechoConvexo = quickHull(pontos, extremos[0], extremos[1]);
+    vector<Ponto> fechoConvexo = quickHull(pontos);
 
-    // 5
     auto fim = high_resolution_clock::now();
     auto tempo = duration_cast<microseconds>(fim - inicio);
     cout << fixed << setprecision(6) << (float)(tempo.count()) / 1000000 << endl;
 
-    // 6
     criarArquivoDeSaida(fechoConvexo, "fecho.txt");
-
-    /*vector<Ponto> a;
-    vector<Ponto> b;
-
-    a.push_back(Ponto(1,1));
-    b.push_back(Ponto(2,2));
-    a.push_back(Ponto(3,3));
-    */
-
-    for (int i = 0; i < fechoConvexo.size(); i++)
-    {
-        cout << "x: " << fechoConvexo[i].x << " y: " << fechoConvexo[i].y << endl;
-    }
 
     return 0;
 }
