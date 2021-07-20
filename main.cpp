@@ -67,16 +67,19 @@ struct Reta
 
 /**
  * Função que verifica se o ponto está à esquerda da reta, à direita ou sobre a reta.
+ *
+ * Como apenas é calculado operações matemáticas com constantes e não há nenhum loop,
+ * o algoritmo é linear, portanto pertence a O(1)
  * 
- * Para verificar se p3(x3,y3) está à esquerda da reta p1(x1,y1)p2(x2,y2),
+ * Para verificar se p(x3,y3) está à esquerda da reta p1(x1,y1)p2(x2,y2),
  * calcula-se: 
- * f(p1,p2,p3) = (x2 − x1)(y3 − y1) − (y2 − y1)(x3 − x1);
+ * f(p1,p2,p) = (x2 − x1)(y3 − y1) − (y2 − y1)(x3 − x1);
  * 
- * se f(p1,p2,p3) > 0, p3 está à esquerda da reta p1p2. Retorna 1
- * se f(p1,p2,p3) < 0, p3 está à direita da reta p1p2. Retorna -1
- * se f(p1,p2,p3) = 0, p3 está sobre a reta p1p2. Retorna 0
+ * se f(p1,p2,p) > 0, p3 está à esquerda da reta p1p2. Retorna 1
+ * se f(p1,p2,p) < 0, p3 está à direita da reta p1p2. Retorna -1
+ * se f(p1,p2,p) = 0, p3 está sobre a reta p1p2. Retorna 0
  */
-int pontoEstaAEsquerdaDaReta(Ponto p, Reta r)
+int posicaoPontoDaReta(Ponto p, Reta r)
 {
     float area = ((r.p2.x - r.p1.x) * (p.y - r.p1.y)) - ((r.p2.y - r.p1.y) * (p.x - r.p1.x));
 
@@ -89,10 +92,13 @@ int pontoEstaAEsquerdaDaReta(Ponto p, Reta r)
 
 /**
  * Função que calcula a distância entre um ponto e uma reta.
+ *
+ * Como apenas é calculado operações matemáticas com constantes e não há nenhum loop,
+ * o algoritmo é linear, portanto pertence a O(1)
  * 
- * Para fazer o cálculo entre o ponto p3(x3,y3) e a reta p1(x1,y1)p2(x2,y2),
+ * Para fazer o cálculo entre o ponto p(x3,y3) e a reta p1(x1,y1)p2(x2,y2),
  * faz-se:
- * d(p1,p2,p3) = sqrt(((x2 − x1)(y3 − y1) − (y2 − y1)(x3 − x1))^2) / sqrt(((x2 − x1)^2 + (y2 − y1)^2))
+ * d(p1,p2,p) = sqrt(((x2 − x1)(y3 − y1) − (y2 − y1)(x3 − x1))^2) / sqrt(((x2 − x1)^2 + (y2 − y1)^2))
  */
 float distanciaEntrePontoEReta(Ponto p, Reta r)
 {
@@ -105,6 +111,9 @@ float distanciaEntrePontoEReta(Ponto p, Reta r)
 
 /**
  * Função que retorna os pontos mais extremos dentro de um conjunto de pontos.
+ *
+ * Para pegar os pontos mais extremos, é necessário percorrer o vetor de pontos,
+ * de tamanho n, por completo para verificar todos, portanto pertence a O(n)
  * 
  * O critério de escolha é o maior x para o máximo e o menor x para o mínimo.
  * Em caso de empate, maior y para o menor, menor y para o maior.
@@ -134,7 +143,26 @@ vector<Ponto> pontosExtremos(vector<Ponto> pontos)
 }
 
 /**
- * TODO -> documentação
+ * Função que encontra os pontos pertencentes ao fecho convexo dentre todos os pontos
+ * para algum lado da reta
+ *
+ * Primeiro é calculado o ponto mais distante da reta, para isso, é necessário percorrer o vetor
+ * uma vez [O(n)]. Ao encontrar esse ponto, ele já estará no fecho convexo, então ele é
+ * inserido no fechoConvexo na posição correta [TODO]. Com esse ponto e a reta, temos um poligono.
+ * Analisamos quais pontos estão dentro do polígono, para descartá-los e quais estão fora [O(n)].
+ * Estes que estão fora, são enviados como parâmetro novamente para se repetir o processo, até
+ * que todos sejam analisados [O(n^2)].
+ * No melhor caso, se os pontos estão balanceados, ou seja, que possuem o mesmo número de pontos
+ * à direita e à esquerda da reta de pontos extremos, a complexidade pertence a O(n lg n). Pois temos
+ * T(n) = 2T(n/2) + O(n), onde o 2T(n/2) representa a recursão e o O(n) representa as buscas. Usando o
+ * Teorema Mestre, vemos que a = 2, b = 2 e d = 1, então caimos no caso que a = b^d, portanto
+ * T(n) pertence a O(n^d * log(b) n), ou seja O(n lg n)
+ * No pior caso, temos os pontos desbalanceados, ou seja, todos os pontos estão em apenas um dos lados,
+ * e isso seria T(n) = T(n-1) + O(n), que resulta em O(n^2), pelo Método da Substituição.
+ *
+ * Recebe o ponteiro que guardará os pontos do fecho convexo, a lista com todos os
+ * pontos a serem analisados (à direita ou à esquerda da reta) e a reta com dois pontos.
+ *
  */
 void findHull(vector<Ponto> *fechoConvexo, vector<Ponto> pontos, Reta r)
 {
@@ -161,11 +189,11 @@ void findHull(vector<Ponto> *fechoConvexo, vector<Ponto> pontos, Reta r)
 
     for (const Ponto &ponto : pontos)
     {
-        int lado1 = pontoEstaAEsquerdaDaReta(ponto, Reta(r.p1, pontoMaisDistante));
+        int lado1 = posicaoPontoDaReta(ponto, Reta(r.p1, pontoMaisDistante));
         if (lado1 == -1)
             s1.push_back(ponto);
 
-        int lado2 = pontoEstaAEsquerdaDaReta(ponto, Reta(pontoMaisDistante, r.p2));
+        int lado2 = posicaoPontoDaReta(ponto, Reta(pontoMaisDistante, r.p2));
         if (lado2 == -1)
             s2.push_back(ponto);
     }
@@ -175,7 +203,17 @@ void findHull(vector<Ponto> *fechoConvexo, vector<Ponto> pontos, Reta r)
 }
 
 /**
- * TODO -> documentação
+ * Função acha os pontos que compõe o fecho convexo de um conjunto de pontos
+ *
+ * Primeiramente, encontra os pontos extremos do conjunto [O(n)], esses pontos
+ * já são inseridos na resposta, pois fazem parte do fecho convexo. Em seguida,
+ * percorre o vetor para separar em pontos à direita e à esquerda da reta formada
+ * pelos pontos extremos [O(n)]. Por fim, é chamado o findHull [O(n^2)].
+ * Portanto, essa função é O(n) +  O(n^2), resultando em O(n^2), pois é a de maior
+ * ordem.
+ *
+ * Recebe um vetor de pontos e retorna um vetor de pontos do fechoConvexo ordenado
+ * anti-horário
  */
 vector<Ponto> quickHull(vector<Ponto> pontos)
 {
@@ -190,7 +228,7 @@ vector<Ponto> quickHull(vector<Ponto> pontos)
 
     for (const Ponto &ponto : pontos)
     {
-        int val = pontoEstaAEsquerdaDaReta(ponto, Reta(extremos[0], extremos[1]));
+        int val = posicaoPontoDaReta(ponto, Reta(extremos[0], extremos[1]));
 
         if (val == -1)
             s1.push_back(ponto);
@@ -298,6 +336,12 @@ bool arquivoExiste(const char *nome)
     return arquivo.good();
 }
 
+/**
+ * Função calcula o fecho convexo de uma lista de pontos de um arquivo .txt e
+ * salva a resposta em um arquivo .txt de saída e calcula o tempo que o algoritmo
+ * demorou para gerar a saída.
+ *
+ */
 int main(int argc, char **argv)
 {
     if (argc != 2 || !arquivoExiste(argv[1]))
