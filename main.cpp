@@ -358,7 +358,7 @@ int main(int argc, char **argv)
 
     auto fim = high_resolution_clock::now();
     auto tempo = duration_cast<microseconds>(fim - inicio);
-    cout << fixed << setprecision(6) << (float)(tempo.count()) / 1000000 << endl;
+    cout << fixed << std::setprecision(6) << (float)(tempo.count()) / 1000000 << endl;
 
     criarArquivoDeSaida(fechoConvexo, "fecho.txt");
 
