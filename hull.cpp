@@ -160,6 +160,17 @@ vector<Ponto> pontosExtremos(vector<Ponto> pontos)
  * T(n) pertence a O(n^d * log(b) n), ou seja O(n lg n)
  * No pior caso, temos os pontos desbalanceados, ou seja, todos os pontos estão em apenas um dos lados,
  * e isso seria T(n) = T(n-1) + O(n), que resulta em O(n^2), pelo Método da Substituição.
+ * 
+ * 
+ * Corretude:
+ * Como calculamos as ditancias entre ponto e a reta para todos os pontos do 
+ * conjunto, e vamos substituindo na variavel distanciaMaxima, ao fim do primeiro for
+ * sempre temos garantidamente o ponto mais distante da reta, que pertence ao fecho.
+ * No segundo for, criamos duas novas retas, que formam um poligono. Sabendo a posicao
+ * dessa reta, conseguimos descartar pontos em cima dela (para ter sempre o menor conjunto)
+ * e pontos dentro do poligono, que nao pertencem ao fecho. Fazendo isso recursivamente, garantimos 
+ * que nao teremos nenhum ponto mais distante ainda fora do poligono.
+ * 
  *
  * Recebe o ponteiro que guardará os pontos do fecho convexo, a lista com todos os
  * pontos a serem analisados (à direita ou à esquerda da reta) e a reta com dois pontos.
@@ -213,6 +224,15 @@ void findHull(vector<Ponto> *fechoConvexo, vector<Ponto> pontos, Reta r)
  * pelos pontos extremos [O(n)]. Por fim, é chamado o findHull [O(n^2)].
  * Portanto, essa função é O(n) +  O(n^2), resultando em O(n^2), pois é a de maior
  * ordem.
+ * 
+ * Corretude:
+ * A hipótese é de que, recebendo um vetor de pontos, retornamos o fecho
+ * convexo formado com o menor número de pontos.
+ * O primeiro for garante que dividimos corretamente o vetor para aplicar
+ * o metodo de divisao e conquista, diminuindo nosso problema a uma proposta mais simples.
+ * Com os dois conjuntos, juntamos os dois poligonos retornados pelo findHull, que já formam
+ * cada um, a metade do fecho, e resultam no fecho convexo final.
+ * 
  *
  * Recebe um vetor de pontos e retorna um vetor de pontos do fechoConvexo ordenado
  * anti-horário
