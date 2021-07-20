@@ -2,4 +2,4 @@ debug/*.dSYM
 debug/main
 _dev
 simulate
-.vscode/settings.json
+.vscode/c_cpp_properties.json

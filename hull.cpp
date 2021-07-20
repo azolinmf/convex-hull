@@ -14,6 +14,7 @@
 // Manipulação de arquivos
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 // Estrutura de dados e funções matemáticas
 #include <vector>
 #include <math.h>
@@ -148,7 +149,7 @@ vector<Ponto> pontosExtremos(vector<Ponto> pontos)
  *
  * Primeiro é calculado o ponto mais distante da reta, para isso, é necessário percorrer o vetor
  * uma vez [O(n)]. Ao encontrar esse ponto, ele já estará no fecho convexo, então ele é
- * inserido no fechoConvexo na posição correta [TODO]. Com esse ponto e a reta, temos um poligono.
+ * inserido no fechoConvexo na posição correta linearmente [O(n)]. Com esse ponto e a reta, temos um poligono.
  * Analisamos quais pontos estão dentro do polígono, para descartá-los e quais estão fora [O(n)].
  * Estes que estão fora, são enviados como parâmetro novamente para se repetir o processo, até
  * que todos sejam analisados [O(n^2)].
@@ -182,6 +183,7 @@ void findHull(vector<Ponto> *fechoConvexo, vector<Ponto> pontos, Reta r)
     }
 
     vector<Ponto>::iterator it = find(fechoConvexo->begin(), fechoConvexo->begin() + fechoConvexo->size(), r.p1);
+
     fechoConvexo->insert(it + 1, pontoMaisDistante);
 
     vector<Ponto> s1; //direita de (r.p1, pontoMaisDistante)
