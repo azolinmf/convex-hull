@@ -4,12 +4,12 @@ mkdir simulate
 echo -e "Quantos Pontos?"
 read INPUT
 cd scripts
-make
+make >/dev/null
 ./genpoints $INPUT
-make clean
+make clean >/dev/null
 mv input.txt ../simulate
 cd ..
-make
+make >/dev/null
 mv hull simulate
 cd simulate
 ./hull input.txt

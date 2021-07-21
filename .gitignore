@@ -1,5 +1,6 @@
 debug/*.dSYM
 debug/main
+debug/fecho.txt
 _dev
 simulate
 .vscode/c_cpp_properties.json
