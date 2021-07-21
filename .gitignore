@@ -4,3 +4,4 @@ _dev
 simulate
 .vscode/c_cpp_properties.json
 .vscode/settings.json
+*[0-9]_*[0-9]_*[0-9].zip

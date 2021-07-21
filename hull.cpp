@@ -6,7 +6,7 @@
  * 
  * Alunos:
  * 1508920 - Maria Fernanda Azolin
- * 1976744 - Flavia Gouvea Santos
+ * 1936344 - Flavia Gouvea Santos
  * 1942808 - Otávio Baziewicz Filho
  * 
  */
