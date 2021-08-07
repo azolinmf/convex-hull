@@ -66,6 +66,21 @@ struct Reta
     }
 };
 
+float distanciaEuclidiana(Ponto p1, Ponto p2)
+{
+    return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
+}
+
+//dentro do fecho é pk
+float somaDistanciasTripla(Ponto pi, Ponto pj, Ponto pk)
+{
+    float dij = distanciaEuclidiana(pi, pj);
+    float dik = distanciaEuclidiana(pi, pk);
+    float djk = distanciaEuclidiana(pj, pk);
+
+    return dik + djk - dij;
+}
+
 /**
  * Função que verifica se o ponto está à esquerda da reta, à direita ou sobre a reta.
  *
@@ -358,6 +373,80 @@ bool arquivoExiste(const char *nome)
     return arquivo.good();
 }
 
+vector<int> achaMelhorTripla(vector<Ponto> fecho, vector<Ponto> C)
+{
+    float distancia = 0;
+    float menorDistancia = somaDistanciasTripla(fecho[0], fecho[1], C[0]);
+    int index = 0;
+
+    vector<int> tripla;
+    //index dos pontos que sao a mehlro tripla
+
+    for (int i = 0; i < C.size(); i++) {
+        for (int j = 0; j < fecho.size(); j++) {
+            if (j < fecho.size() - 1) {
+                index = j + 1;
+            } else {
+                index = 0;
+            }
+
+            distancia = somaDistanciasTripla(fecho[j], fecho[index], C[i]);
+
+            if (distancia < menorDistancia) {
+                tripla.clear();
+
+                menorDistancia = distancia;
+
+                //pra retornar o index dos tres pontos que sao a melhor tripla
+                tripla.push_back(j);
+                tripla.push_back(index);
+                tripla.push_back(i);
+            }
+        }
+    }
+
+    return tripla;
+}
+
+vector<Ponto> pontosForaDoFecho(vector<Ponto> pontos, vector<Ponto> fecho) {
+
+    vector<Ponto> C;
+
+    for (int i = 0; i < pontos.size(); i++) {
+        bool achou = false;
+        for (int j = 0; j < fecho.size(); j++) {
+            if ((pontos[i].x == fecho[j].x) && (pontos[i].y == fecho[j].y)) {
+                achou = true;
+                break;
+            }
+        }
+        if (!achou) {
+            C.push_back(pontos[i]);
+        }
+        achou = false;
+    }
+
+    return C;
+}
+
+vector<Ponto> caixeiroViajante(vector<Ponto> pontos) {
+    vector<Ponto> fechoConvexo = quickHull(pontos); 
+    vector<Ponto> C = pontosForaDoFecho(pontos, fechoConvexo);
+
+    while (C.size() > 0) {
+        vector<int> tripla = achaMelhorTripla(fechoConvexo, C);
+        int indexK = tripla[2];
+        int indexI = tripla[0];
+        int indexJ = tripla[1];
+
+        //insere ponto no fecho e retira do conjunto C
+        fechoConvexo.insert(fechoConvexo.begin()+(indexI+1), C[indexK]);
+        C.erase(C.begin() + indexK);
+    }   
+
+    return fechoConvexo; 
+}
+
 /**
  * Função calcula o fecho convexo de uma lista de pontos de um arquivo .txt e
  * salva a resposta em um arquivo .txt de saída e calcula o tempo que o algoritmo
@@ -366,8 +455,7 @@ bool arquivoExiste(const char *nome)
  */
 int main(int argc, char **argv)
 {
-    if (argc != 2 || !arquivoExiste(argv[1]))
-    {
+    if (argc != 2 || !arquivoExiste(argv[1])) {
         cout << "Uso: ./hull input_file.txt" << endl;
         return 1;
     }
@@ -376,13 +464,14 @@ int main(int argc, char **argv)
 
     auto inicio = high_resolution_clock::now();
 
-    vector<Ponto> fechoConvexo = quickHull(pontos);
+    vector<Ponto> caixeiro = caixeiroViajante(pontos);
+    //vector<Ponto> fechoConvexo = quickHull(pontos);
 
     auto fim = high_resolution_clock::now();
     auto tempo = duration_cast<microseconds>(fim - inicio);
     cout << fixed << std::setprecision(6) << (float)(tempo.count()) / 1000000 << endl;
 
-    criarArquivoDeSaida(fechoConvexo, "fecho.txt");
+    criarArquivoDeSaida(caixeiro, "fecho.txt");
 
     return 0;
 }
