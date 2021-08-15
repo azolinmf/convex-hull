@@ -380,7 +380,7 @@ vector<int> achaMelhorTripla(vector<Ponto> fecho, vector<Ponto> C)
     int index = 0;
 
     vector<int> tripla;
-    //index dos pontos que sao a mehlro tripla
+    //index dos pontos que sao a melhor tripla
 
     for (int i = 0; i < C.size(); i++) {
         for (int j = 0; j < fecho.size(); j++) {
@@ -408,19 +408,40 @@ vector<int> achaMelhorTripla(vector<Ponto> fecho, vector<Ponto> C)
     return tripla;
 }
 
+
+/**
+ * Função que determina quais são os pontos que não pertencem ao fecho convexo.
+ * Recebe os pontos do arquivo de entrada (todos os pontos) e a lista que é o fecho.
+ * 
+ * Complexidade:
+ * A complexidade é O(n*m), sendo n o tamanho do pontos, e m o tamanho do fecho.
+ * Como temos um for interando entre todos os n pontos de pontos, e dentro dele, outro for
+ * iterando entre os m pontos do fecho, temos m*n.
+ * 
+ * Corretude:
+ * Como percorremos o vetor inteiro de pontos da entrada, e fazemos a verificação um a um
+ * para checar se pertencem ao fecho, garantidamente no fim, teremos nosso vetor resultado só
+ * com os pontos desejados (os que nao pertencem ao fecho).
+ * 
+ * */
 vector<Ponto> pontosForaDoFecho(vector<Ponto> pontos, vector<Ponto> fecho) {
 
     vector<Ponto> C;
 
     for (int i = 0; i < pontos.size(); i++) {
-        bool achou = false;
+        //percorre todos os pontos da entrada
+        bool achou = false;  //usa a booleana para verificar se precisa adicionar ao
+                            //vetor C de saida ou nao
+
         for (int j = 0; j < fecho.size(); j++) {
-            if ((pontos[i].x == fecho[j].x) && (pontos[i].y == fecho[j].y)) {
+            if (pontos[i] == fecho[j]) {
+                //se o ponto pertence ao fecho, nao adicionaremos ao C
                 achou = true;
                 break;
             }
         }
         if (!achou) {
+            //se nao achou, é pq nao pertence ao fecho
             C.push_back(pontos[i]);
         }
         achou = false;
