@@ -373,24 +373,51 @@ bool arquivoExiste(const char *nome)
     return arquivo.good();
 }
 
-vector<int> achaMelhorTripla(vector<Ponto> fecho, vector<Ponto> C)
+
+/**
+ * Função que procura a melhor tripla entre os pontos do ciclo atual, sendo que
+ * uma tripla é um conjunto de tres pontos formado por dois pontos que sao uma reta 
+ * do ciclo e um ponto a ser inserido entre eles. A melhor tripla é a que possui
+ * a menor distancia resultante da soma do ponto 1 ao ponto que queremos inserir e
+ * do ponto que queremos inserir ao ponto 2.
+ * Essa funcao recebe o ciclo atual e os pontos que pertencem a entrada, mas ainda
+ * nao foram colocados no ciclo.
+ * 
+ * 
+ * Complexidade: 
+ * A complexidade é O(n*m), sendo m o tamanho do ciclo, e n o tamanho da lista de pontos
+ * que ainda nao fazem parte do ciclo.
+ * Como temos um for iterando entre os n pontos da lista, e dentro dele, 
+ * outro for interando entre todos os m pontos do ciclo, temos n*m.
+ * As demais operacoes dentro dos for nao alteram a complexidade,
+ * pois são apenas comparacoes (ifs e elses) e calculos, portante, tem tempos constantes.
+ * 
+ * 
+ * Corretude:
+ * O algoritmo funciona pois todos os pontos da lista sao analisados e as triplas que 
+ * podemos formar com eles, computadas. Sabendo o valor da distancia das triplas, armazenamos
+ * em uma variavel que é sempre substituida quando se acha um valor menor de distancia, ao mesmo tempo
+ * que se atualiza o valor da possivel melhor tripla.
+ **/
+
+vector<int> achaMelhorTripla(vector<Ponto> ciclo, vector<Ponto> C)
 {
     float distancia = 0;
-    float menorDistancia = somaDistanciasTripla(fecho[0], fecho[1], C[0]);
+    float menorDistancia = somaDistanciasTripla(ciclo[0], ciclo[1], C[0]);
     int index = 0;
 
     vector<int> tripla;
     //index dos pontos que sao a melhor tripla
 
     for (int i = 0; i < C.size(); i++) {
-        for (int j = 0; j < fecho.size(); j++) {
-            if (j < fecho.size() - 1) {
+        for (int j = 0; j < ciclo.size(); j++) {
+            if (j < ciclo.size() - 1) {
                 index = j + 1;
             } else {
                 index = 0;
             }
 
-            distancia = somaDistanciasTripla(fecho[j], fecho[index], C[i]);
+            distancia = somaDistanciasTripla(ciclo[j], ciclo[index], C[i]);
 
             if (distancia < menorDistancia) {
                 tripla.clear();
@@ -415,7 +442,7 @@ vector<int> achaMelhorTripla(vector<Ponto> fecho, vector<Ponto> C)
  * 
  * Complexidade:
  * A complexidade é O(n*m), sendo n o tamanho do pontos, e m o tamanho do fecho.
- * Como temos um for interando entre todos os n pontos de pontos, e dentro dele, outro for
+ * Como temos um for iterando entre todos os n pontos de pontos, e dentro dele, outro for
  * iterando entre os m pontos do fecho, temos m*n.
  * 
  * Corretude:
@@ -450,29 +477,49 @@ vector<Ponto> pontosForaDoFecho(vector<Ponto> pontos, vector<Ponto> fecho) {
     return C;
 }
 
+
+/**
+ * 
+ * Funcao que determina um possivel caminho para ser percorrido no ciclo, com
+ * garantia que percorrera todos os pontos.  
+ * O algoritmo nao necessariamente computa a solucao otima, mas sim uma solucao que possa
+ * ser computada rapidamente mesmo para entradas grandes.
+ * 
+ * Complexidade:
+ * A complexidade é O((nˆ2)*m), já que a funcao acharMelhorTripla tem complexidade
+ * O(n*m), e ela está sendo chamada constantemente dentro de um while que executa n vezes.
+ * Apesar de termos a funcao quickHull sendo chamada antes do while, essa tem complexidade
+ * O(nˆ2). A funcao pontosForaDoFecho tem complexidade O(n*m). Como ambas sao menores que
+ *  O((nˆ2)*m), prevalece a complexidade da maior (a do while). 
+ * 
+ * Corretude:
+ * Funciona pois toda vez que achamos a melhor tripla do conjunto, inserimos
+ * o ponto correspondente no ciclo, e removemos da lista de pontos que ainda estao fora do ciclo,
+ * evitando que seja inserido mais de uma vez. Fazemos isso ate que nao hajam mais pontos na lista.
+ * */
+
 vector<Ponto> caixeiroViajante(vector<Ponto> pontos) {
-    vector<Ponto> fechoConvexo = quickHull(pontos); 
-    vector<Ponto> C = pontosForaDoFecho(pontos, fechoConvexo);
+    vector<Ponto> ciclo = quickHull(pontos); 
+    vector<Ponto> C = pontosForaDoFecho(pontos, ciclo);
 
     while (C.size() > 0) {
-        vector<int> tripla = achaMelhorTripla(fechoConvexo, C);
+        vector<int> tripla = achaMelhorTripla(ciclo, C);
         int indexK = tripla[2];
         int indexI = tripla[0];
         int indexJ = tripla[1];
 
         //insere ponto no fecho e retira do conjunto C
-        fechoConvexo.insert(fechoConvexo.begin()+(indexI+1), C[indexK]);
+        ciclo.insert(ciclo.begin()+(indexI+1), C[indexK]);
         C.erase(C.begin() + indexK);
     }   
 
-    return fechoConvexo; 
+    return ciclo; 
 }
 
 /**
- * Função calcula o fecho convexo de uma lista de pontos de um arquivo .txt e
- * salva a resposta em um arquivo .txt de saída e calcula o tempo que o algoritmo
- * demorou para gerar a saída.
- *
+ * Função que calcula um algoritmo de aproximacao do caixeiro viajante de uma lista de 
+ * pontos de um arquivo .txt e salva a resposta em um arquivo .txt de saída e calcula 
+ * o tempo que o algoritmo demorou para gerar a saída.
  */
 int main(int argc, char **argv)
 {
