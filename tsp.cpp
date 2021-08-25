@@ -17,6 +17,7 @@
 #include <iomanip>
 // Estrutura de dados e funções matemáticas
 #include <vector>
+#include <numeric>
 #include <math.h>
 // Cálculo do tempo
 #include <chrono>
@@ -373,7 +374,6 @@ bool arquivoExiste(const char *nome)
     return arquivo.good();
 }
 
-
 /**
  * Função que procura a melhor tripla entre os pontos do ciclo atual, sendo que
  * uma tripla é um conjunto de tres pontos formado por dois pontos que sao uma reta 
@@ -409,17 +409,23 @@ vector<int> achaMelhorTripla(vector<Ponto> ciclo, vector<Ponto> C)
     vector<int> tripla;
     //index dos pontos que sao a melhor tripla
 
-    for (int i = 0; i < C.size(); i++) {
-        for (int j = 0; j < ciclo.size(); j++) {
-            if (j < ciclo.size() - 1) {
+    for (int i = 0; i < C.size(); i++)
+    {
+        for (int j = 0; j < ciclo.size(); j++)
+        {
+            if (j < ciclo.size() - 1)
+            {
                 index = j + 1;
-            } else {
+            }
+            else
+            {
                 index = 0;
             }
 
             distancia = somaDistanciasTripla(ciclo[j], ciclo[index], C[i]);
 
-            if (distancia < menorDistancia) {
+            if (distancia < menorDistancia)
+            {
                 tripla.clear();
 
                 menorDistancia = distancia;
@@ -434,7 +440,6 @@ vector<int> achaMelhorTripla(vector<Ponto> ciclo, vector<Ponto> C)
 
     return tripla;
 }
-
 
 /**
  * Função que determina quais são os pontos que não pertencem ao fecho convexo.
@@ -451,23 +456,28 @@ vector<int> achaMelhorTripla(vector<Ponto> ciclo, vector<Ponto> C)
  * com os pontos desejados (os que nao pertencem ao fecho).
  * 
  * */
-vector<Ponto> pontosForaDoFecho(vector<Ponto> pontos, vector<Ponto> fecho) {
+vector<Ponto> pontosForaDoFecho(vector<Ponto> pontos, vector<Ponto> fecho)
+{
 
     vector<Ponto> C;
 
-    for (int i = 0; i < pontos.size(); i++) {
+    for (int i = 0; i < pontos.size(); i++)
+    {
         //percorre todos os pontos da entrada
-        bool achou = false;  //usa a booleana para verificar se precisa adicionar ao
+        bool achou = false; //usa a booleana para verificar se precisa adicionar ao
                             //vetor C de saida ou nao
 
-        for (int j = 0; j < fecho.size(); j++) {
-            if (pontos[i] == fecho[j]) {
+        for (int j = 0; j < fecho.size(); j++)
+        {
+            if (pontos[i] == fecho[j])
+            {
                 //se o ponto pertence ao fecho, nao adicionaremos ao C
                 achou = true;
                 break;
             }
         }
-        if (!achou) {
+        if (!achou)
+        {
             //se nao achou, é pq nao pertence ao fecho
             C.push_back(pontos[i]);
         }
@@ -476,7 +486,6 @@ vector<Ponto> pontosForaDoFecho(vector<Ponto> pontos, vector<Ponto> fecho) {
 
     return C;
 }
-
 
 /**
  * 
@@ -498,33 +507,61 @@ vector<Ponto> pontosForaDoFecho(vector<Ponto> pontos, vector<Ponto> fecho) {
  * evitando que seja inserido mais de uma vez. Fazemos isso ate que nao hajam mais pontos na lista.
  * */
 
-vector<Ponto> caixeiroViajante(vector<Ponto> pontos) {
-    vector<Ponto> ciclo = quickHull(pontos); 
-    vector<Ponto> C = pontosForaDoFecho(pontos, ciclo);
+vector<Ponto> caixeiroViajante(vector<Ponto> fechoConvexo, vector<Ponto> pontos)
+{
+    // vector<Ponto> ciclo = quickHull(pontos);
+    vector<Ponto> C = pontosForaDoFecho(pontos, fechoConvexo);
 
-    while (C.size() > 0) {
-        vector<int> tripla = achaMelhorTripla(ciclo, C);
+    while (C.size() > 0)
+    {
+        vector<int> tripla = achaMelhorTripla(fechoConvexo, C);
         int indexK = tripla[2];
         int indexI = tripla[0];
         int indexJ = tripla[1];
 
         //insere ponto no fecho e retira do conjunto C
-        ciclo.insert(ciclo.begin()+(indexI+1), C[indexK]);
+        fechoConvexo.insert(fechoConvexo.begin() + (indexI + 1), C[indexK]);
         C.erase(C.begin() + indexK);
-    }   
+    }
 
-    return ciclo; 
+    return fechoConvexo;
+}
+
+/**
+ * Função que calcula o custo do ciclo gerado como saida do algoritmo de simulação
+ * do caixeiro viajante. Ele executa a função de cálculo da distância euclidiana.
+ * 
+ * Complexidade:
+ * A complexidade da função é O(n), já que a mesma percorre o vetor de Pontos, chamado 
+ * de caixeiro e executa uma operação aritmética, adicionando o resultado em um acumulador.
+ *
+ * Corretude:
+ * A função funciona pois a cada ciclo de iteração, a função interna distanciaEuclidiana
+ * recebe como parâmetro o ponto atual "i" e o ponto subsequente "i+1", calculando a sua distância.
+ * Após o cálculo, "i" passa a ser "i+1", e o processo é repetido até o final do vetor. No final,
+ * o resultado é o custo do ciclo.
+ * 
+ */
+float calculaCustoDoCicloComputado(vector<Ponto> caixeiro)
+{
+    float sum = 0;
+    for (int i = 0; i < caixeiro.size() - 1; i++)
+    {
+        sum += distanciaEuclidiana(caixeiro[i], caixeiro[i + 1]);
+    }
+    return sum;
 }
 
 /**
  * Função que calcula um algoritmo de aproximacao do caixeiro viajante de uma lista de 
- * pontos de um arquivo .txt e salva a resposta em um arquivo .txt de saída e calcula 
- * o tempo que o algoritmo demorou para gerar a saída.
+ * pontos de um arquivo .txt e salva a resposta em dois arquivos .txt (fecho e ciclo) 
+ * de saída e calcula o tempo que o algoritmo demorou para gerar a saída.
  */
 int main(int argc, char **argv)
 {
-    if (argc != 2 || !arquivoExiste(argv[1])) {
-        cout << "Uso: ./hull input_file.txt" << endl;
+    if (argc != 2 || !arquivoExiste(argv[1]))
+    {
+        cout << "Uso: ./tsp input_file.txt" << endl;
         return 1;
     }
 
@@ -532,14 +569,19 @@ int main(int argc, char **argv)
 
     auto inicio = high_resolution_clock::now();
 
-    vector<Ponto> caixeiro = caixeiroViajante(pontos);
-    //vector<Ponto> fechoConvexo = quickHull(pontos);
+    vector<Ponto> fechoConvexo = quickHull(pontos);
+    vector<Ponto> caixeiro = caixeiroViajante(fechoConvexo, pontos);
 
     auto fim = high_resolution_clock::now();
     auto tempo = duration_cast<microseconds>(fim - inicio);
-    cout << fixed << std::setprecision(6) << (float)(tempo.count()) / 1000000 << endl;
 
-    criarArquivoDeSaida(caixeiro, "fecho.txt");
+    caixeiro.push_back(caixeiro[0]);
+    auto custo = calculaCustoDoCicloComputado(caixeiro);
+
+    cout << fixed << std::setprecision(6) << (float)(tempo.count()) / 1000000 << " " << (float)(custo) << endl;
+
+    criarArquivoDeSaida(caixeiro, "ciclo.txt");
+    criarArquivoDeSaida(fechoConvexo, "fecho.txt");
 
     return 0;
 }
