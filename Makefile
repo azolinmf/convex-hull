@@ -1,4 +1,4 @@
 all:
-	g++ hull.cpp -o hull -std=c++20
+	g++ tsp.cpp -o tsp -std=c++2a
 clean:
-	rm -f hull
+	rm -f tsp
