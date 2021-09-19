@@ -1,6 +1,6 @@
 # Convex-hull
 
-Implementação do problema do caixeiro viajante usando fecho convexo, para a matéria de Projeto e Análise de Algoritmos da UTFPR - Curitiba, em 2021/2.
+Implementação do problema do caixeiro viajante usando fecho convexo, para a matéria de Projeto e Análise de Algoritmos da UTFPR - Curitiba, do curso de Engenharia da Computação, em 2021/2.
 
 ## Debug (vscode)
 O vscode vai compilar o programa e colocar os arquivos de resultado na pasta `debug`. A execução utilizará o arquivo: `debug/input.txt`
